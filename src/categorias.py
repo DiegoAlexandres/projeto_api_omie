@@ -38,3 +38,49 @@ categoria
 #%%
 df = pd.json_normalize(categoria)
 df
+
+#%%
+#=========================================TRATAMENTO DE DADOS=================================================
+
+df["conta_inativa"].value_counts()
+
+#%%
+df_tratado = df[df["conta_inativa"] == "N"].copy()
+df_tratado
+
+#%%
+df_tratado["conta_inativa"].value_counts()
+
+#%%
+df_tratado = df_tratado[df_tratado["totalizadora"] == "N"]
+df_tratado
+
+#%%
+df_tratado = df_tratado[[
+    "codigo",
+    "descricao",
+    "dadosDRE.codigoDRE",
+    "dadosDRE.descricaoDRE",
+]].copy()
+
+#%%
+df_tratado
+
+#%%
+df_tratado = df_tratado.rename(columns={
+    "codigo"                : "id_categoria",
+    "descricao"             : "descricao_categoria",
+    "dadosDRE.codigoDRE"    : "id_dre",
+    "dadosDRE.descricaoDRE" : "descricao_dre",
+})
+
+#%%
+df_tratado
+
+#%%
+df_tratado[["id_dre", "descricao_dre"]] = df_tratado[["id_dre", "descricao_dre"]].fillna("")
+df_tratado
+
+#%%
+df_tratado = df_tratado.reset_index(drop=True)
+df_tratado
