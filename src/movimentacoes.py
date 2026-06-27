@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 import os
 from dotenv import load_dotenv, find_dotenv
+import time
 
 #%%
 load_dotenv(find_dotenv())
@@ -13,27 +14,40 @@ SECRET_KEY = os.getenv("OMIE_SECRET_KEY")
 
 #%%
 url = "https://app.omie.com.br/api/v1/financas/mf/"
-payload = {
-    "call" : "ListarMovimentos",
-    "app_key" : APP_KEY,
-    "app_secret" : SECRET_KEY,
-    "param" : [{
-        "nPagina" : 1,
-        "nRegPorPagina" : 500
-    }],
-}
 
 #%%
-response = requests.post(url, json=payload, timeout=60)
-print("Status: ", response.status_code)
+def buscar_movimentacoes(pagina):
+    payload = {
+        "call" : "ListarMovimentos",
+        "app_key" : APP_KEY,
+        "app_secret" : SECRET_KEY,
+        "param" : [{
+            "nPagina" : pagina,
+            "nRegPorPagina" : 500
+        }],
+    }
+    response = requests.post(url, json=payload, timeout=60)
+    return response.json()
 
 #%%
-dados = response.json()
-dados
+primeira_pagina = buscar_movimentacoes(1)
+primeira_pagina
 
 #%%
-movimentacao = dados["movimentos"]
-movimentacao
+total_paginas = primeira_pagina["nTotPaginas"]
+total_paginas
+
+#%%
+movimentacao = []
+
+#%%
+for pagina in range(1, total_paginas + 1):
+    dados = buscar_movimentacoes(pagina)
+    movimentacao.extend(dados["movimentos"])
+    print(f"Página: {pagina} OK")
+    time.sleep(1)
+    
+print("Total Coletado:", len(movimentacao))
 
 #%%
 df = pd.json_normalize(movimentacao)
